@@ -1,0 +1,58 @@
+apply from: 'databaseSetup.gradle'
+
+repositories {
+    maven { url 'https://maven.aliyun.com/repository/public/' }
+    mavenLocal()
+    mavenCentral()
+}
+
+sourceSets {
+    integrationTest {
+        //集成测试源目录
+        java.srcDir file('src/integTest/java')
+        //集成测试资源目录
+        resources.srcDir file('src/integTest/resources')
+        //指定编译时classpath
+        compileClasspath = sourceSets.main.output
+        runtimeClasspath = output + compileClasspath
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom implementation
+    integrationTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
+dependencies {
+    api project(':model')
+    implementation group: 'com.h2database', name: 'h2', version: '2.1.210'
+    implementation group: 'junit', name: 'junit', version: '4.12'
+}
+
+test {
+    //定义单元测试结果和报告输出目录
+    reports.html.destination = file("$reports.html.destination/unit")
+    reports.junitXml.destination = file("$reports.junitXml.destination/unit")
+}
+
+tasks.register("integrationTest", Test) {
+    description = '运行集成测试'
+    group = 'verification'
+    //将测试task指定给可以找到测试类的目录
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    reports.html.destination = file("$reports.html.destination/integration")
+    reports.junitXml.destination = file("$reports.junitXml.destination/integration")
+//    dependsOn startDatabase
+//    finalizedBy stopDatabase
+}
+
+tasks.withType(Test) {
+    testLogging {
+        showStandardStreams = true
+        exceptionFormat 'full'
+    }
+}
+
+//添加集成测试作为check task的依赖
+check.dependsOn integrationTest

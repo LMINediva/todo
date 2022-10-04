@@ -1,0 +1,17 @@
+allprojects {
+    group = 'com.lc'
+    version = '0.1'
+}
+
+subprojects {
+    apply plugin: 'java-library'
+
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+    }
+
+    //JaCoCo插件所需要的传递性依赖是从Maven Central获取的
+    repositories {
+        mavenCentral()
+    }
+}

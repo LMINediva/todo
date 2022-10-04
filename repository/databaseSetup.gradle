@@ -1,0 +1,67 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.h2database:h2:2.1.210'
+    }
+}
+
+ext.h2TcpPort = 9092
+ext.h2StartupBlockMs = 2000
+
+task startDatabase(type: H2DatabaseStarter) {
+    group = 'database'
+    description = '启动数据库'
+    tcpPort = h2TcpPort
+    blockMs = h2StartupBlockMs
+}
+
+task stopDatabase(type: JavaExec) {
+    group = 'database'
+    description = '停止数据库'
+    classpath = buildscript.configurations.classpath
+    main = 'org.h2.tools.Server'
+    args = ['-tcpShutdown', "tcp://localhost:${h2TcpPort}"]
+}
+
+task buildSchema(type: JavaExec, dependsOn: startDatabase) {
+    group = 'database'
+    description = '构建数据库模式'
+    classpath = buildscript.configurations.classpath
+    workingDir = projectDir
+    main = 'org.h2.tools.RunScript'
+    args = ['-url', 'jdbc:h2~/todo', '-user', 'sa', '-script', 'create-todo.sql']
+}
+
+task startAndPrepareDatabase(dependsOn: buildSchema)
+
+class H2DatabaseStarter extends DefaultTask {
+    @Input
+    Integer tcpPort
+
+    @Input
+    Integer blockMs
+
+    @TaskAction
+    void start() {
+        new Thread(new H2Server(tcpPort)).start()
+        Thread.sleep(blockMs)
+    }
+
+    private class H2Server implements Runnable {
+        final Integer tcpPort
+
+        H2Server(Integer tcpPort) {
+            this.tcpPort = tcpPort
+        }
+
+        @Override
+        void run() {
+            org.h2.tools.Server.main('-tcp', '-tcpPort', tcpPort.toString())
+        }
+    }
+}

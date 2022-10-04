@@ -1,0 +1,65 @@
+apply plugin: 'war'
+apply plugin: 'groovy'
+
+repositories {
+    maven { url 'https://maven.aliyun.com/repository/public/' }
+    mavenLocal()
+    mavenCentral()
+}
+
+configurations {
+    //功能测试的编译和运行时配置
+    functTestCompile.extendsFrom testImplementation
+    functTestRuntime.extendsFrom testRuntimeOnly
+}
+
+ext.seleniumGroup = 'org.seleniumhq.selenium'
+// 2022年1月
+ext.seleniumVersion = '3.141.59'
+
+dependencies {
+    api project(':repository')
+    implementation 'com.google.guava:guava:30.1.1-jre'
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    compileOnly 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
+    implementation 'javax.servlet:jstl:1.2'
+    implementation 'taglibs:standard:1.1.2'
+    testImplementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.35'
+    testImplementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.35', ext: 'pom'
+    testImplementation group: 'log4j', name: 'log4j', version: '1.2.17'
+    testImplementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.35'
+    testImplementation group: 'org.slf4j', name: 'slf4j-nop', version: '1.7.35'
+    //声明编译依赖Geb JUnit支持和Selenium的API
+    // 2020年4月
+    testImplementation group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.3'
+    // 2014年12月
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    // 2012年8月
+    functTestCompile group: 'org.codehaus.geb', name: 'geb-junit4', version: '0.7.2'
+    functTestCompile group: "$seleniumGroup", name: "selenium-api", version: "$seleniumVersion"
+    //声明运行时依赖Selenium驱动来远程控制Firefox
+    functTestRuntime group: "$seleniumGroup", name: "selenium-firefox-driver", version: "$seleniumVersion"
+}
+
+sourceSets {
+    functionalTest {
+        groovy.srcDir file('src/functTest/groovy')
+        resources.srcDir file('src/functTest/resources')
+        //将自定义的功能测试配置给classpath属性
+        compileClasspath = sourceSets.main.output + configurations.functTestCompile
+        runtimeClasspath = output + compileClasspath + configurations.functTestRuntime
+    }
+}
+
+task functionalTest(type: Test) {
+    testClassesDirs = sourceSets.functionalTest.output.classesDirs
+    classpath = sourceSets.functionalTest.runtimeClasspath
+    //指定自定义的测试结果和报告目录
+    reports.html.destination = file("$reports.html.destination/functional")
+    reports.junitXml.destination = file("$reports.junitXml.destination/functional")
+    //强制性的Geb系统属性
+    systemProperty 'geb.env', 'firefox'
+    systemProperty 'geb.build.reportsDir', reporting.file("$name/geb")
+}
+
+check.dependsOn functionalTest

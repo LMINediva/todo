@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.lc.respository.InMemoryToDoRepositoryTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2022-09-17T15:07:27" hostname="DESKTOP-NPDILRQ" time="0.005">
+  <properties/>
+  <testcase name="testInsertToDoItem" classname="com.lc.respository.InMemoryToDoRepositoryTest" time="0.004"/>
+  <testcase name="testFindAllActiveToDoItems" classname="com.lc.respository.InMemoryToDoRepositoryTest" time="0.0"/>
+  <testcase name="testDeleteToDoItem" classname="com.lc.respository.InMemoryToDoRepositoryTest" time="0.0"/>
+  <testcase name="testFindAllToDoItems" classname="com.lc.respository.InMemoryToDoRepositoryTest" time="0.0"/>
+  <testcase name="testFindAllCompletedToDoItems" classname="com.lc.respository.InMemoryToDoRepositoryTest" time="0.0"/>
+  <testcase name="testFindToDoItemById" classname="com.lc.respository.InMemoryToDoRepositoryTest" time="0.0"/>
+  <testcase name="testUpdateToDoItem" classname="com.lc.respository.InMemoryToDoRepositoryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
